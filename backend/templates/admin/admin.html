@@ -1,0 +1,236 @@
+
+
+{% block header %}
+  <h1>{% block title %}Admin{% endblock %}</h1>
+  {% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+{% endblock %}
+
+{% block content %}
+    <div id="acoes-gerais">
+        <a href="{{ url_for('admin.atualizar_query_busca') }}">Atualizar Query Busca</a>
+    </div>
+    <div id="usuarios">
+        <table>
+            <tr>
+                <th>Acoes</th>
+                <th>Id</th>
+                <th>Nome</th>
+                <th>Cadastrado em</th>
+                <th>Facebook</th>
+                <th>Acessos</th>
+                <th>Anuncios</th>
+                <th>Tipo</th>
+                <th>Cidade</th>
+                <th>Estado</th>
+                <th>Telefone</th>
+                <th>Email</th>
+            </tr>
+        {% for usuario in data['usuarios'] %}
+            <tr class="usuario">
+                <form action="{{ url_for('admin.editar_usuario') }}" method="POST">
+                    <input type="hidden" name="usuario_id" value="{{usuario.id}}"/>
+                    <td>
+                        <a href="{{ url_for('admin.deletar_usuario', usuario_id=usuario.id) }}">Deletar</a>
+                        <input type="submit" value="Salvar"/></td>
+                    </td>
+                    <td>{{ usuario.id }}</td>
+                    <td>
+                        <a href="{# { url_for('ver_usuario', usuario_id=usuario.id) } #}" target="_blank">{{usuario.nome}}</a>
+                    </td>
+                    <td>{{ usuario.cadastrado_em.strftime('%d-%m-%Y %H:%M:%S') }}</td>
+                    <td>
+                        <a href="https://www.facebook.com/profile.php?u={{usuario.facebook_id}}" target="_blank">Facebook</a>
+                    </td>
+                    <td>{{ usuario.views }}</td>
+                    <td>{{ usuario.qtd_anuncios }}</td>
+                    <td>
+                        <select name="tipo">
+                            <option value="Pessoa Fisica" {%if usuario.tipo == 'Pessoa Fisica'%} selected=selected{%endif%}>
+                                Pessoa Fisica
+                            </option>
+                            <option value="Garagem" {%if usuario.tipo == 'Garagem'%} selected=selected{%endif%}>
+                                Garagem
+                            </option>
+                        </select>
+                    <td>
+                        <input type="text" name="cidade" value="{{ usuario.cidade or '' }}"/>
+                    </td>
+                    <td>
+                        <input type="text" name="estado" value="{{ usuario.estado or '' }}"/>
+                    </td>
+                    <td>
+                        <input type="text" name="telefone" value="{{ usuario.telefone }}"/>
+                        <a href="https://api.whatsapp.com/send?phone=55{{ usuario.telefone }}">Whats</a>
+                    </td>
+                    <td>
+                        <input type="text" name="email" value="{{ usuario.email }}"/>
+                        <a href="mailto:{{ usuario.email }}">Email</a>
+                    </td>
+                </form>
+            </tr>
+        {% endfor %}
+    </div>
+    <div id="contatos">
+        <table>
+            <tr>
+                <th>Data</th>
+                <th>Nome</th>
+                <th>Contato</th>
+                <th>Texto</th>
+            </tr>
+            {% for c in data['contatos'] %}
+                <tr>
+                    <td>{{ c['timestamp'] }}</td>
+                    <td>{{ c['nome'] }}</td>
+                    <td>{{ c['contato'] }}</td>
+                    <td>{{ c['texto'] }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div id="anuncios">
+	<h1>Anuncios NAO Aprovados</h1>
+        <table>
+            <tr>
+                <th>Acoes</th>
+                <th>Criado em</th>
+                <th>Acessos</th>
+                <th>Usuario</th>
+                <th>Aprovado</th>
+                <th>Titulo</th>
+                <th>Descricao</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Ano</th>
+                <th>Valor</th>
+                <th>Cor</th>
+                <th>Troca</th>
+                <th>Imagens</th>
+            </tr>
+        {% for anuncio in data['anuncios'] if anuncio.aprovado == False %}
+            <tr class="anuncio">
+                <form action="{{ url_for('admin.editar_anuncio') }}" method="POST">
+                    <input type="hidden" name="anuncio_id" value="{{anuncio.id}}"/>
+                    <td>
+	                <!--<a href="https://clozer.com.br/{{anuncio.id}}" target="_blank">Ver</a>-->
+                        <a href="{{ url_for('admin.deletar_anuncio', anuncio_id=anuncio.id) }}">Deletar</a>
+                        <input type="submit" value="Salvar"/></td>
+                    </td>                    
+                    <td>{{ anuncio['criado_em'].strftime('%d-%m-%Y %H:%M:%S') }}</td>
+                    <td>{{ anuncio.views }}</td>
+                    <td>
+                        <a href="{# { url_for('ver_usuario', usuario_id=anuncio.usuario.id) } #}" target="_blank">{{anuncio.usuario.nome}}</a>
+                    </td>
+                    <td>{{anuncio.aprovado}}
+                        <a href="{{ url_for('admin.aprovar_reprovar_anuncio', aprovar_reprovar='aprovar', anuncio_id=anuncio.id) }}">Aprovar</a>
+                        <a href="{{ url_for('admin.aprovar_reprovar_anuncio', aprovar_reprovar='reprovar', anuncio_id=anuncio.id) }}">Reprovar</a>
+                    </td>
+                    <td>
+                        <input type="text" name="titulo" value="{{ anuncio.titulo  or '' }}"/></td>
+                    <td>
+                        <textarea name="descricao" cols=30 rows=5>{{ anuncio.descricao or '' }}</textarea></td>
+                    <td>
+                        <input type="text" name="marca" value="{{ anuncio.marca or ''  }}"/></td>
+                    <td>
+                        <input type="text" name="modelo" value="{{ anuncio.modelo or ''  }}"/></td>
+                    <td>
+                        <input type="text" name="ano" value="{{ anuncio.ano or 0 }}"/></td>
+                    <td>
+                        <input type="text" name="valor" value="{{ anuncio.valor or 0 }}"/></td>
+                    <td>
+                        <input type="text" name="cor" value="{{ anuncio.cor or '' }}"/></td>
+                    <td>
+                        <input type="checkbox" name="troca" {% if anuncio.troca %} checked {% endif %}/>{{anuncio.troca}}</td>
+                </form>
+                <td>
+                    {% for img in anuncio.imagens %}
+                        <img src="{{url_for('static', filename=img.img_filename)|replace('static/', '')}}" width=300 height=220/>
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    </div>
+    <div id="anuncios">
+	<h1>Anuncios APROVADOS</h1>
+        <table>
+            <tr>
+                <th>Acoes</th>
+                <th>Criado em</th>
+                <th>Acessos</th>
+                <th>Usuario</th>
+                <th>Aprovado</th>
+                <th>Titulo</th>
+                <th>Descricao</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Ano</th>
+                <th>Valor</th>
+                <th>Cor</th>
+                <th>Troca</th>
+                <th>Imagens</th>
+            </tr>
+        {% for anuncio in data['anuncios'] if anuncio.aprovado == True %}
+            <tr class="anuncio">
+                <form action="{{ url_for('admin.editar_anuncio') }}" method="POST">
+                    <input type="hidden" name="anuncio_id" value="{{anuncio.id}}"/>
+                    <td>
+	                <a href="https://clozer.com.br/anuncio/{{anuncio.id}}" target="_blank">Ver</a>
+                        <a href="{{ url_for('admin.deletar_anuncio', anuncio_id=anuncio.id) }}">Deletar</a>
+                        <input type="submit" value="Salvar"/></td>
+                    </td>                    
+                    <td>{{ anuncio['criado_em'].strftime('%d-%m-%Y %H:%M:%S') }}</td>
+                    <td>{{ anuncio.views }}</td>
+                    <td>
+                        <a href="{# { url_for('ver_usuario', usuario_id=anuncio.usuario.id) } #}" target="_blank">{{anuncio.usuario.nome}}</a>
+                    </td>
+                    <td>{{anuncio.aprovado}}
+                        <a href="{{ url_for('admin.aprovar_reprovar_anuncio', aprovar_reprovar='aprovar', anuncio_id=anuncio.id) }}">Aprovar</a>
+                        <a href="{{ url_for('admin.aprovar_reprovar_anuncio', aprovar_reprovar='reprovar', anuncio_id=anuncio.id) }}">Reprovar</a>
+                    </td>
+                    <td>
+                        <input type="text" name="titulo" value="{{ anuncio.titulo  or '' }}"/></td>
+                    <td>
+                        <textarea name="descricao" cols=30 rows=5>{{ anuncio.descricao or '' }}</textarea></td>
+                    <td>
+                        <input type="text" name="marca" value="{{ anuncio.marca or ''  }}"/></td>
+                    <td>
+                        <input type="text" name="modelo" value="{{ anuncio.modelo or ''  }}"/></td>
+                    <td>
+                        <input type="text" name="ano" value="{{ anuncio.ano or 0 }}"/></td>
+                    <td>
+                        <input type="text" name="valor" value="{{ anuncio.valor or 0 }}"/></td>
+                    <td>
+                        <input type="text" name="cor" value="{{ anuncio.cor or '' }}"/></td>
+                    <td>
+                        <input type="checkbox" name="troca" {% if anuncio.troca %} checked {% endif %}/>{{anuncio.troca}}</td>
+                </form>
+                <td>
+                    {% for img in anuncio.imagens %}
+                        <img src="{{url_for('static', filename=img.img_filename)|replace('static/', '')}}" width=300 height=220/>
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    </div>
+
+    <div id="buscas">
+        <table>
+            <tr>
+                <th>Usuario</th>
+                <th>Data</th>
+                <th>Busca</th>
+            </tr>
+            {% for busca in data['buscas'] %}
+                <tr class="anuncio">
+                    <td>{{ busca['usuario'] }}</td>
+                    <td>{{ busca['buscado_em'].strftime('%d-%m-%Y %H:%M:%S') }}</td>
+                    <td>{{ busca['busca'] }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

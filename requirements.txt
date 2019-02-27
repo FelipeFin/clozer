@@ -1,0 +1,11 @@
+flask
+flask_mail
+flask_sqlalchemy
+requests
+flask_jwt_extended
+flask_restful
+flask_cors
+psycopg2
+Pillow
+python-dotenv
+sentry-sdk
